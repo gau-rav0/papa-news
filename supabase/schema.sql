@@ -107,4 +107,23 @@ create policy "anon reads completed articles"
 grant execute on function public.insert_article_if_new(text, text, text, text, text, text, text, timestamptz) to service_role;
 grant execute on function public.claim_articles_for_translation(integer) to service_role;
 
+-- Push notification device tokens.
+create table if not exists public.device_tokens (
+  id uuid primary key default gen_random_uuid(),
+  expo_push_token text unique not null,
+  created_at timestamptz not null default now()
+);
 
+alter table public.device_tokens enable row level security;
+
+-- Anon may register a token; it cannot read, update, or delete.
+grant insert on public.device_tokens to anon;
+revoke select, update, delete, truncate on public.device_tokens from anon;
+
+drop policy if exists "anon inserts device token" on public.device_tokens;
+create policy "anon inserts device token"
+  on public.device_tokens for insert to anon
+  with check (true);
+
+-- The server reads tokens for push sending and deletes invalid ones.
+grant select, delete on public.device_tokens to service_role;

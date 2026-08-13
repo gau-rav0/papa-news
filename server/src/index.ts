@@ -1,6 +1,7 @@
 import { fetchLimit, supabase, translationBatchSize } from './config.js';
 import { fetchRecentLapaasPosts } from './lapaas-wordpress.js';
 import { log } from './log.js';
+import { sendPushNotifications } from './push.js';
 import { translateToHindi } from './translation.js';
 import { SourceArticle, StoredArticle } from './types.js';
 
@@ -62,6 +63,8 @@ async function processArticle(article: StoredArticle): Promise<void> {
       const result = await translateToHindi(article.original_title, article.original_content);
       await complete(article, result.hindi_title, result.hindi_content);
       log('article.completed', { article_id: article.id, source_url: article.source_url, attempt: attempt + 1 });
+      try { await sendPushNotifications(result.hindi_title); }
+      catch (pushError) { log('article.push_failed', { article_id: article.id, error: pushError instanceof Error ? pushError.message : String(pushError) }); }
       return;
     } catch (error) {
       if (attempt === retryDelaysMs.length) return fail(article, error);

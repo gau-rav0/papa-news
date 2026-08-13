@@ -1240,61 +1240,80 @@ The system is considered successful when all of the following are true.
 
 ## Article Collection
 
-* [ ] System can retrieve recent Lapaas articles.
-* [ ] System can determine publication time.
-* [ ] System can identify article URL.
-* [ ] System can identify title.
-* [ ] System can extract article body.
-* [ ] System can identify category when available.
-* [ ] System can identify image when available.
+* [x] System can retrieve recent Lapaas articles.
+* [x] System can determine publication time.
+* [x] System can identify article URL.
+* [x] System can identify title.
+* [x] System can extract article body.
+* [x] System can identify category when available.
+* [x] System can identify image when available.
 
 ## Historical Filtering
 
-* [ ] System has a persistent `system_start_time`.
-* [ ] Articles before `system_start_time` are ignored.
-* [ ] System never performs historical migration/import by default.
-* [ ] Restarting backend does not reset `system_start_time`.
+* [x] System has a persistent `system_start_time`.
+* [x] Articles before `system_start_time` are ignored.
+* [x] System never performs historical migration/import by default.
+* [x] Restarting backend does not reset `system_start_time`.
 
 ## Duplicate Protection
 
-* [ ] Same article cannot be inserted twice.
-* [ ] Same article cannot be translated twice under normal operation.
-* [ ] Retries do not create duplicates.
+* [x] Same article cannot be inserted twice.
+* [x] Same article cannot be translated twice under normal operation.
+* [x] Retries do not create duplicates.
 
 ## Translation
 
-* [ ] Articles are translated into natural Hindi.
-* [ ] Articles are not intentionally shortened.
-* [ ] Names remain correct.
-* [ ] Numbers remain correct.
-* [ ] Dates remain correct.
-* [ ] Financial values remain correct.
-* [ ] No unsupported facts are introduced.
+* [x] Articles are translated into natural Hindi.
+* [x] Articles are not intentionally shortened.
+* [x] Names remain correct.
+* [x] Numbers remain correct.
+* [x] Dates remain correct.
+* [x] Financial values remain correct.
+* [x] No unsupported facts are introduced.
 
 ## Database
 
-* [ ] Raw source data is stored.
-* [ ] Hindi content is stored.
-* [ ] Processing status is stored.
-* [ ] Processing errors are stored.
-* [ ] Publication timestamps are stored.
+* [x] Raw source data is stored.
+* [x] Hindi content is stored.
+* [x] Processing status is stored.
+* [x] Processing errors are stored.
+* [x] Publication timestamps are stored.
 
 ## Mobile App
 
-* [ ] Latest articles load.
-* [ ] Newest article appears first.
-* [ ] User can open full article.
-* [ ] Hindi article is readable.
-* [ ] Source link works.
-* [ ] Missing image does not break article display.
+* [x] Latest articles load.
+* [x] Newest article appears first.
+* [x] User can open full article.
+* [x] Hindi article is readable.
+* [x] Source link works.
+* [x] Missing image does not break article display.
 
 ## Reliability
 
-* [ ] AI failure does not lose the article.
-* [ ] Website failure does not crash the worker.
-* [ ] Temporary network failure can recover.
-* [ ] Failed articles can be retried.
-* [ ] App works even when the news worker is temporarily unavailable.
+* [x] AI failure does not lose the article.
+* [x] Website failure does not crash the worker.
+* [x] Temporary network failure can recover.
+* [x] Failed articles can be retried.
+* [x] App works even when the news worker is temporarily unavailable.
+
+## Push Notifications
+
+* [x] Completed article triggers push notification to registered devices.
+* [x] Push failure never blocks or fails article processing.
+* [x] Invalid/unregistered tokens are cleaned up automatically.
+* [x] App works fully without notification permission granted.
+
+## Hindi Text-to-Speech
+
+* [x] Article detail screen has a "🔊 सुनें" button.
+* [x] TTS uses on-device speech engine (no API cost).
+* [x] Stop button available while speaking.
+
+## Deployment Readiness
+
+* [x] SETUP.md runbook covers fresh clone to running system.
+* [x] eas.json + app.json are ready for a real Android build.
+* [x] No secrets in app/ or in git.
 
 ---
 

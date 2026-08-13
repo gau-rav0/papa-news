@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme as NavigationDarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -12,11 +12,19 @@ import ArticleDetailScreen from './screens/ArticleDetailScreen';
 import SavedScreen from './screens/SavedScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { RootStackParamList } from './types';
+import { registerForPushNotifications } from './lib/notifications';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({ shouldShowAlert: true, shouldPlaySound: true, shouldSetBadge: false }),
+});
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const Navigation = () => {
   const { theme } = useTheme();
+
+  useEffect(() => { registerForPushNotifications(); }, []);
 
   const customLightTheme = {
     ...DefaultTheme,

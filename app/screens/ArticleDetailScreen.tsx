@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, Linking, SafeAreaView } from 'react-native';
+import * as Speech from 'expo-speech';
 import { useRoute, useNavigation, useTheme as useNavTheme, RouteProp } from '@react-navigation/native';
 import { Bookmark } from 'lucide-react-native';
 import { format } from 'date-fns';
@@ -22,7 +23,13 @@ export default function ArticleDetailScreen() {
   const { isBookmarked, toggleBookmark } = useBookmarks();
 
   const [imageError, setImageError] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const fontSize = getFontSizeNumber();
+
+  // Stop speech when leaving the screen
+  useEffect(() => {
+    return () => { Speech.stop(); };
+  }, []);
 
   useEffect(() => {
     navigation.setOptions({
@@ -66,6 +73,31 @@ export default function ArticleDetailScreen() {
             </Text>
           )}
         </View>
+
+        <TouchableOpacity
+          style={[styles.ttsButton, isSpeaking && styles.ttsButtonActive]}
+          onPress={() => {
+            if (isSpeaking) {
+              Speech.stop();
+              setIsSpeaking(false);
+            } else {
+              const content = article.hindi_content || article.original_content;
+              if (content) {
+                setIsSpeaking(true);
+                Speech.speak(content, {
+                  language: 'hi-IN',
+                  onDone: () => setIsSpeaking(false),
+                  onStopped: () => setIsSpeaking(false),
+                  onError: () => setIsSpeaking(false),
+                });
+              }
+            }
+          }}
+        >
+          <Text style={styles.ttsButtonText}>
+            {isSpeaking ? '⏹ रुकें' : '🔊 सुनें'}
+          </Text>
+        </TouchableOpacity>
 
         {article.image_url && !imageError && (
           <Image
@@ -155,5 +187,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  }
+  },
+  ttsButton: {
+    backgroundColor: '#e8f5e9',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 20,
+  },
+  ttsButtonActive: {
+    backgroundColor: '#ffebee',
+  },
+  ttsButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
 });
