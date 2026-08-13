@@ -9,7 +9,7 @@ A linear, start-to-finish runbook. Follow every step in order.
 - **Node.js 18+** and **npm** installed on your computer.
 - A free **Supabase** account at [supabase.com](https://supabase.com).
 - A free **Expo / EAS** account at [expo.dev](https://expo.dev).
-- An **OpenAI API key** for article translation.
+- A **Kimchi API key** (from Moonshot AI) for article translation.
 
 ---
 
@@ -41,10 +41,10 @@ A linear, start-to-finish runbook. Follow every step in order.
    ```
    SUPABASE_URL=https://your-project.supabase.co
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   OPENAI_API_KEY=your-openai-api-key
+   KIMCHI_API_KEY=your-kimchi-api-key
    ```
 
-> **⚠️ Never copy `SUPABASE_SERVICE_ROLE_KEY` or `OPENAI_API_KEY` into `app/`. These are server-only secrets.**
+> **⚠️ Never copy `SUPABASE_SERVICE_ROLE_KEY` or `KIMCHI_API_KEY` into `app/`. These are server-only secrets.**
 
 ## 4. Seed the System Start Time
 
@@ -60,14 +60,20 @@ This records the current timestamp as the cutoff. Only articles published **afte
 
 ## 5. Deploy the Server
 
-See [`server/DEPLOY.md`](server/DEPLOY.md) for deployment instructions. In summary:
+The recommended, free deployment method uses GitHub Actions.
 
-1. Deploy to an always-on service (Railway, Render, Cloud Run, or a VM).
-2. Set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `OPENAI_API_KEY` as deployment secrets.
-3. Build: `npm ci && npm run build`
-4. Start: `npm start`
+1. Go to your GitHub repository on the web.
+2. Navigate to **Settings → Secrets and variables → Actions**.
+3. Add these three values as **New repository secrets**:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `KIMCHI_API_KEY`
 
-The worker polls Lapaas Voice for new articles every 5 minutes (configurable in `system_config`).
+Once added, the GitHub Actions workflow (`.github/workflows/worker.yml`) runs automatically every 5 minutes to poll for new articles.
+
+> **⚠️ Note on GitHub Actions:** GitHub disables scheduled workflows automatically if there has been no repository activity for 60 days. You may need to occasionally commit to the repository or manually re-enable the workflow if this happens.
+
+*(For a traditional always-on process like Render or Railway, see the optional [`server/DEPLOY.md`](server/DEPLOY.md) instead.)*
 
 ## 6. Configure the App
 
