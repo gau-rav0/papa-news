@@ -19,6 +19,7 @@ function positiveInteger(name: string, fallback: number, max: number): number {
 
 export const fetchLimit = positiveInteger('FETCH_LIMIT', 20, 100);
 export const translationBatchSize = positiveInteger('TRANSLATION_BATCH_SIZE', 5, 100);
-export const openAiModel = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
+export const kimchiModel = process.env.KIMCHI_MODEL ?? 'moonshot-v1-8k';
+export const kimchiApiKey = required('KIMCHI_API_KEY');
 
 

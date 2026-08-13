@@ -1,22 +1,16 @@
 import OpenAI from 'openai';
 
-const openAiModel = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
+const kimchiModel = process.env.KIMCHI_MODEL ?? 'moonshot-v1-8k';
 
 export type HindiTranslation = { hindi_title: string; hindi_content: string };
 const ERROR_TEXT = /^(error|sorry|unable|i cannot|i can't|translation failed)\b/i;
 const WORDS = /[\p{L}\p{N}]+/gu;
 
-const schema = {
-  type: 'object', additionalProperties: false,
-  required: ['hindi_title', 'hindi_content'],
-  properties: { hindi_title: { type: 'string' }, hindi_content: { type: 'string' } },
-} as const;
-
 const instructions = `Convert the following English news article into natural, easy-to-read Hindi.
 
 Do NOT summarize the article. Do NOT intentionally shorten the article. Preserve all meaningful information from the source, including names, companies, numbers, dates, percentages, financial figures, locations, technical details, important context, and important statements/quotes. Do not add facts, speculate, or introduce opinions. Write natural Hindi suitable for an Indian reader. Use commonly understood business and technology terminology; a technical/business term may remain in English when clearer.
 
-Return only the requested JSON fields.`;
+Return a JSON object with exactly two keys: \`hindi_title\` and \`hindi_content\`, and nothing else.`;
 
 export function wordCount(text: string): number { return text.match(WORDS)?.length ?? 0; }
 
@@ -37,13 +31,22 @@ export function validateTranslation(raw: string, englishContent: string): HindiT
   return translation;
 }
 
+export function buildTranslationRequest(title: string, content: string, model: string, systemPrompt: string) {
+  return {
+    model,
+    messages: [
+      { role: 'system' as const, content: systemPrompt },
+      { role: 'user' as const, content: `Title:\n${title}\n\nArticle:\n${content}` },
+    ],
+    response_format: { type: 'json_object' as const },
+  };
+}
+
 export async function translateToHindi(title: string, content: string): Promise<HindiTranslation> {
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const response = await client.responses.create({
-    model: openAiModel,
-    input: [{ role: 'system', content: instructions }, { role: 'user', content: `Title:\n${title}\n\nArticle:\n${content}` }],
-    text: { format: { type: 'json_schema', name: 'hindi_article_translation', strict: true, schema } },
-  });
-  return validateTranslation(response.output_text, content);
+  const client = new OpenAI({ apiKey: process.env.KIMCHI_API_KEY, baseURL: 'https://api.moonshot.ai/v1' });
+  const request = buildTranslationRequest(title, content, kimchiModel, instructions);
+  const response = await client.chat.completions.create(request);
+  const outputText = response.choices[0]?.message?.content ?? '';
+  return validateTranslation(outputText, content);
 }
 
