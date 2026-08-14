@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 
-const kimchiModel = process.env.KIMCHI_MODEL ?? 'moonshot-v1-8k';
+const kimchiModel = process.env.KIMCHI_MODEL ?? 'moonshotai/Kimi-Dev-72B';
 
 export type HindiTranslation = { hindi_title: string; hindi_content: string };
 const ERROR_TEXT = /^(error|sorry|unable|i cannot|i can't|translation failed)\b/i;
@@ -43,10 +43,9 @@ export function buildTranslationRequest(title: string, content: string, model: s
 }
 
 export async function translateToHindi(title: string, content: string): Promise<HindiTranslation> {
-  const client = new OpenAI({ apiKey: process.env.KIMCHI_API_KEY, baseURL: 'baseURL: 'https://llm.chutes.ai/v1' });
+  const client = new OpenAI({ apiKey: process.env.KIMCHI_API_KEY, baseURL: 'https://llm.chutes.ai/v1' });
   const request = buildTranslationRequest(title, content, kimchiModel, instructions);
   const response = await client.chat.completions.create(request);
   const outputText = response.choices[0]?.message?.content ?? '';
   return validateTranslation(outputText, content);
 }
-
