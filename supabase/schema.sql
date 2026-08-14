@@ -27,8 +27,11 @@ create table if not exists public.articles (
   processing_started_at timestamptz,
   processing_status text not null default 'pending'
     check (processing_status in ('pending', 'processing', 'completed', 'failed', 'ignored')),
-  processing_error text
+  processing_error text,
+  retry_count integer not null default 0
 );
+
+alter table public.articles add column if not exists retry_count integer not null default 0;
 
 create index if not exists articles_completed_published_at_idx
   on public.articles (published_at desc)
@@ -77,6 +80,8 @@ begin
     where processing_status = 'pending'
        or (processing_status = 'processing'
            and processing_started_at < now() - interval '1 hour')
+       or (processing_status = 'failed'
+           and retry_count < 5)
     order by published_at asc
     for update skip locked
     limit greatest(1, least(p_limit, 100))

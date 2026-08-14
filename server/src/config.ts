@@ -19,7 +19,7 @@ function positiveInteger(name: string, fallback: number, max: number): number {
 
 export const fetchLimit = positiveInteger('FETCH_LIMIT', 20, 100);
 export const translationBatchSize = positiveInteger('TRANSLATION_BATCH_SIZE', 5, 100);
-export const kimchiModel = process.env.KIMCHI_MODEL ?? 'moonshot-v1-8k';
+export const kimchiModel = process.env.KIMCHI_MODEL ?? 'moonshotai/Kimi-Dev-72B';
 export const kimchiApiKey = required('KIMCHI_API_KEY');
 
 

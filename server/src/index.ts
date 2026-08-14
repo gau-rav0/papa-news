@@ -9,7 +9,7 @@ const args = new Set(process.argv.slice(2));
 if ([...args].some((arg) => arg !== '--dry-run' && arg !== '--once')) throw new Error('Usage: npm start -- [--dry-run] [--once]');
 const dryRun = args.has('--dry-run');
 const once = args.has('--once');
-const retryDelaysMs = [60_000, 5 * 60_000, 30 * 60_000];
+const retryDelaysMs = [10_000];
 
 type Config = { system_start_time: string; poll_interval_seconds: number };
 
@@ -47,11 +47,12 @@ async function complete(article: StoredArticle, hindiTitle: string, hindiContent
 
 async function fail(article: StoredArticle, error: unknown): Promise<void> {
   const message = error instanceof Error ? error.message : String(error);
+  const nextRetryCount = (article.retry_count ?? 0) + 1;
   const { error: updateError } = await supabase.from('articles').update({
-    processing_status: 'failed', processing_error: message.slice(0, 2_000), updated_at: new Date().toISOString(),
+    processing_status: 'failed', processing_error: message.slice(0, 2_000), retry_count: nextRetryCount, updated_at: new Date().toISOString(),
   }).eq('id', article.id).eq('processing_status', 'processing');
   if (updateError) throw new Error(`Could not mark ${article.id} failed: ${updateError.message}`);
-  log('article.failed', { article_id: article.id, source_url: article.source_url, processing_error: message });
+  log('article.failed', { article_id: article.id, source_url: article.source_url, retry_count: nextRetryCount, processing_error: message });
 }
 
 const sleep = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));

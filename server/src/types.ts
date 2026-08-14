@@ -15,6 +15,7 @@ export type StoredArticle = {
   source_url: string;
   original_title: string;
   original_content: string;
+  retry_count?: number;
 };
 
 
