@@ -43,7 +43,7 @@ export function buildTranslationRequest(title: string, content: string, model: s
 }
 
 export async function translateToHindi(title: string, content: string): Promise<HindiTranslation> {
-  const client = new OpenAI({ apiKey: process.env.KIMCHI_API_KEY, baseURL: 'https://api.moonshot.ai/v1' });
+  const client = new OpenAI({ apiKey: process.env.KIMCHI_API_KEY, baseURL: 'baseURL: 'https://llm.chutes.ai/v1' });
   const request = buildTranslationRequest(title, content, kimchiModel, instructions);
   const response = await client.chat.completions.create(request);
   const outputText = response.choices[0]?.message?.content ?? '';
