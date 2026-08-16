@@ -2,7 +2,7 @@ import { fetchLimit, supabase, translationBatchSize } from './config.js';
 import { fetchRecentLapaasPosts } from './lapaas-wordpress.js';
 import { log } from './log.js';
 import { sendPushNotifications } from './push.js';
-import { translateToHindi } from './translation.js';
+import { isTransientError, translateToHindi } from './translation.js';
 import { SourceArticle, StoredArticle } from './types.js';
 
 const args = new Set(process.argv.slice(2));
@@ -57,7 +57,7 @@ async function fail(article: StoredArticle, error: unknown): Promise<void> {
 
 const sleep = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-async function processArticle(article: StoredArticle): Promise<void> {
+export async function processArticle(article: StoredArticle): Promise<void> {
   for (let attempt = 0; attempt <= retryDelaysMs.length; attempt += 1) {
     try {
       log('article.translation_started', { article_id: article.id, source_url: article.source_url, attempt: attempt + 1 });
@@ -68,7 +68,8 @@ async function processArticle(article: StoredArticle): Promise<void> {
       catch (pushError) { log('article.push_failed', { article_id: article.id, error: pushError instanceof Error ? pushError.message : String(pushError) }); }
       return;
     } catch (error) {
-      if (attempt === retryDelaysMs.length) return fail(article, error);
+      const isTransient = isTransientError(error);
+      if (!isTransient || attempt === retryDelaysMs.length) return fail(article, error);
       const delay = retryDelaysMs[attempt];
       log('article.translation_retry_scheduled', {
         article_id: article.id, source_url: article.source_url, attempt: attempt + 1, retry_in_seconds: delay / 1_000,

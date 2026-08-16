@@ -79,9 +79,9 @@ begin
     from public.articles
     where processing_status = 'pending'
        or (processing_status = 'processing'
-           and processing_started_at < now() - interval '1 hour')
+           and processing_started_at < now() - interval '10 minutes')
        or (processing_status = 'failed'
-           and retry_count < 5)
+           and retry_count < 10)
     order by published_at asc
     for update skip locked
     limit greatest(1, least(p_limit, 100))

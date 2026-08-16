@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from '@google/genai';
-
-const geminiModel = process.env.GEMINI_MODEL ?? 'gemini-3.5-flash';
+import { geminiModel } from './config.js';
+import { log } from './log.js';
 
 export type HindiTranslation = { hindi_title: string; hindi_content: string };
 const ERROR_TEXT = /^(error|sorry|unable|i cannot|i can't|translation failed)\b/i;
@@ -50,13 +50,95 @@ export function buildTranslationRequest(title: string, content: string, model: s
   };
 }
 
-export async function translateToHindi(title: string, content: string): Promise<HindiTranslation> {
+export function categorizeError(error: unknown): string {
+  if (!error) return 'UNKNOWN_ERROR';
+  const message = error instanceof Error ? error.message : String(error);
+  const status = (error as any)?.status ?? (error as any)?.statusCode ?? (error as any)?.error?.code;
+
+  if ((error as any)?.name === 'TimeoutError' || /timeout|timed out|ETIMEDOUT|ESOCKETTIMEDOUT/i.test(message)) {
+    return 'TIMEOUT';
+  }
+  if (status === 429 || /429|rate[- ]?limit|resource[- ]?exhausted|quota/i.test(message)) {
+    return 'RATE_LIMIT';
+  }
+  if (status === 401 || status === 403 || /401|403|API_KEY|permission_denied/i.test(message)) {
+    return 'AUTH_ERROR';
+  }
+  if (status === 404 || /404|not_found|no longer available/i.test(message)) {
+    return 'NOT_FOUND';
+  }
+  if (status === 400 || /400|invalid_argument|failed_precondition/i.test(message)) {
+    return 'INVALID_ARGUMENT';
+  }
+  if ((typeof status === 'number' && status >= 500 && status < 600) || /500|502|503|504|internal server|unavailable|overloaded/i.test(message)) {
+    return 'SERVER_ERROR';
+  }
+  if (/network|fetch failed|ECONNRESET|ECONNREFUSED|ENOTFOUND|socket hang up/i.test(message)) {
+    return 'NETWORK_ERROR';
+  }
+  if (/AI returned invalid JSON|AI response is missing|AI response contains|Possible summarization/i.test(message)) {
+    return 'VALIDATION_ERROR';
+  }
+  return 'UNKNOWN_ERROR';
+}
+
+export function isTransientError(error: unknown): boolean {
+  if (!error) return false;
+  const category = categorizeError(error);
+  switch (category) {
+    case 'TIMEOUT':
+    case 'RATE_LIMIT':
+    case 'SERVER_ERROR':
+    case 'NETWORK_ERROR':
+    case 'VALIDATION_ERROR':
+      return true;
+    case 'AUTH_ERROR':
+    case 'NOT_FOUND':
+    case 'INVALID_ARGUMENT':
+    default:
+      return false;
+  }
+}
+
+export async function translateToHindi(
+  title: string,
+  content: string,
+  clientOverride?: { models: { generateContent: (req: any) => Promise<any> } },
+  timeoutMs: number = 60_000
+): Promise<HindiTranslation> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is required');
-  const client = new GoogleGenAI({ apiKey });
+  if (!apiKey && !clientOverride) throw new Error('GEMINI_API_KEY is required');
+  const client = clientOverride ?? new GoogleGenAI({ apiKey: apiKey! });
   const model = process.env.GEMINI_MODEL ?? geminiModel;
   const request = buildTranslationRequest(title, content, model, instructions);
-  const response = await client.models.generateContent(request);
-  const outputText = response.text ?? '';
-  return validateTranslation(outputText, content);
+  const startTime = Date.now();
+
+  let timer: NodeJS.Timeout | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      const err = new Error(`Gemini translation timed out after ${timeoutMs}ms`);
+      err.name = 'TimeoutError';
+      reject(err);
+    }, timeoutMs);
+  });
+
+  try {
+    const response = await Promise.race([
+      client.models.generateContent(request),
+      timeoutPromise,
+    ]);
+    const outputText = response.text ?? '';
+    return validateTranslation(outputText, content);
+  } catch (error) {
+    const durationMs = Date.now() - startTime;
+    const errorCategory = categorizeError(error);
+    log('gemini.translation_failed', {
+      model,
+      duration_ms: durationMs,
+      error_category: errorCategory,
+    });
+    throw error;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
