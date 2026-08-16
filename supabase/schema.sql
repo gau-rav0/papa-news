@@ -82,7 +82,7 @@ begin
            and processing_started_at < now() - interval '10 minutes')
        or (processing_status = 'failed'
            and retry_count < 10)
-    order by published_at asc
+    order by published_at desc
     for update skip locked
     limit greatest(1, least(p_limit, 100))
   ), claimed as (
