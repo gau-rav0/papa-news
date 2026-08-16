@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from '@google/genai';
 
-const geminiModel = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
+const geminiModel = process.env.GEMINI_MODEL ?? 'gemini-3.5-flash';
 
 export type HindiTranslation = { hindi_title: string; hindi_content: string };
 const ERROR_TEXT = /^(error|sorry|unable|i cannot|i can't|translation failed)\b/i;

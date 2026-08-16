@@ -17,8 +17,8 @@ test('rejects obvious model error text', () => assert.throws(() => validateTrans
 test('rejects likely summarization under the 60 percent threshold', () => assert.throws(() => validateTranslation(JSON.stringify({ hindi_title: 'Hindi title', hindi_content: 'alpha beta gamma delta epsilon' }), english), /Possible summarization/));
 
 test('buildTranslationRequest creates correct payload', () => {
-  const request = buildTranslationRequest('My Title', 'My Content', 'gemini-2.5-flash', 'System instructions here');
-  assert.equal(request.model, 'gemini-2.5-flash');
+  const request = buildTranslationRequest('My Title', 'My Content', 'gemini-3.5-flash', 'System instructions here');
+  assert.equal(request.model, 'gemini-3.5-flash');
   assert.equal(request.contents, 'Title:\nMy Title\n\nArticle:\nMy Content');
   assert.equal(request.config?.systemInstruction, 'System instructions here');
   assert.equal(request.config?.responseMimeType, 'application/json');

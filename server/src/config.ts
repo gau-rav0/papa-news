@@ -19,7 +19,7 @@ function positiveInteger(name: string, fallback: number, max: number): number {
 
 export const fetchLimit = positiveInteger('FETCH_LIMIT', 20, 100);
 export const translationBatchSize = positiveInteger('TRANSLATION_BATCH_SIZE', 5, 100);
-export const geminiModel = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
+export const geminiModel = process.env.GEMINI_MODEL ?? 'gemini-3.5-flash';
 export const geminiApiKey = required('GEMINI_API_KEY');
 
 
