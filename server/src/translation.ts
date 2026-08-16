@@ -1,6 +1,6 @@
-import OpenAI from 'openai';
+import { GoogleGenAI, Type } from '@google/genai';
 
-const kimchiModel = process.env.KIMCHI_MODEL ?? 'moonshotai/Kimi-Dev-72B';
+const geminiModel = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
 
 export type HindiTranslation = { hindi_title: string; hindi_content: string };
 const ERROR_TEXT = /^(error|sorry|unable|i cannot|i can't|translation failed)\b/i;
@@ -34,18 +34,29 @@ export function validateTranslation(raw: string, englishContent: string): HindiT
 export function buildTranslationRequest(title: string, content: string, model: string, systemPrompt: string) {
   return {
     model,
-    messages: [
-      { role: 'system' as const, content: systemPrompt },
-      { role: 'user' as const, content: `Title:\n${title}\n\nArticle:\n${content}` },
-    ],
-    response_format: { type: 'json_object' as const },
+    contents: `Title:\n${title}\n\nArticle:\n${content}`,
+    config: {
+      systemInstruction: systemPrompt,
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          hindi_title: { type: Type.STRING },
+          hindi_content: { type: Type.STRING },
+        },
+        required: ['hindi_title', 'hindi_content'],
+      },
+    },
   };
 }
 
 export async function translateToHindi(title: string, content: string): Promise<HindiTranslation> {
-  const client = new OpenAI({ apiKey: process.env.KIMCHI_API_KEY, baseURL: 'https://llm.chutes.ai/v1' });
-  const request = buildTranslationRequest(title, content, kimchiModel, instructions);
-  const response = await client.chat.completions.create(request);
-  const outputText = response.choices[0]?.message?.content ?? '';
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY is required');
+  const client = new GoogleGenAI({ apiKey });
+  const model = process.env.GEMINI_MODEL ?? geminiModel;
+  const request = buildTranslationRequest(title, content, model, instructions);
+  const response = await client.models.generateContent(request);
+  const outputText = response.text ?? '';
   return validateTranslation(outputText, content);
 }

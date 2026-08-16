@@ -9,7 +9,7 @@ A linear, start-to-finish runbook. Follow every step in order.
 - **Node.js 18+** and **npm** installed on your computer.
 - A free **Supabase** account at [supabase.com](https://supabase.com).
 - A free **Expo / EAS** account at [expo.dev](https://expo.dev).
-- A **Kimchi API key** (from Moonshot AI) for article translation.
+- A **Gemini API key** (from Google AI Studio) for article translation.
 
 ---
 
@@ -41,10 +41,10 @@ A linear, start-to-finish runbook. Follow every step in order.
    ```
    SUPABASE_URL=https://your-project.supabase.co
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   KIMCHI_API_KEY=your-kimchi-api-key
+   GEMINI_API_KEY=your-gemini-api-key
    ```
 
-> **⚠️ Never copy `SUPABASE_SERVICE_ROLE_KEY` or `KIMCHI_API_KEY` into `app/`. These are server-only secrets.**
+> **⚠️ Never copy `SUPABASE_SERVICE_ROLE_KEY` or `GEMINI_API_KEY` into `app/`. These are server-only secrets.**
 
 ## 4. Seed the System Start Time
 
@@ -67,9 +67,10 @@ The recommended, free deployment method uses GitHub Actions.
 3. Add these three values as **New repository secrets**:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
-   - `KIMCHI_API_KEY`
+   - `GEMINI_API_KEY`
 
 Once added, the GitHub Actions workflow (`.github/workflows/worker.yml`) runs automatically every 5 minutes to poll for new articles.
+
 
 > **⚠️ Note on GitHub Actions:** GitHub disables scheduled workflows automatically if there has been no repository activity for 60 days. You may need to occasionally commit to the repository or manually re-enable the workflow if this happens.
 

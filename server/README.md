@@ -5,7 +5,7 @@ Node.js/TypeScript worker for Lapaas Voice ingestion and Hindi translation. It o
 ## Setup
 
 1. Run [`../supabase/schema.sql`](../supabase/schema.sql) in Supabase.
-2. Copy `.env.example` to `.env`; server-only service-role and Kimchi API keys are required.
+2. Copy `.env.example` to `.env`; server-only service-role and Gemini API keys are required.
 3. `npm install`
 4. At the exact activation moment, run `npm run seed:start-time` once. It will preserve an existing timestamp.
 5. Start the daemon with `npm start`. It polls using `system_config.poll_interval_seconds`, defaulting to five minutes.

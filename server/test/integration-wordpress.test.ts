@@ -1,6 +1,6 @@
 /**
  * Standalone integration test: verify WordPress API fetch + article parsing
- * works end-to-end without needing Supabase or Kimchi credentials.
+ * works end-to-end without needing Supabase or Gemini credentials.
  * Run: npx tsx test/integration-wordpress.test.ts
  */
 import { fetchRecentLapaasPosts, textFromHtml } from '../src/lapaas-wordpress.js';
